@@ -1,0 +1,13 @@
+:root {
+    --bg-primary: #f5f7fb;
+    --bg-card: #ffffff;
+    --text-primary: #1f2937;
+    --text-secondary: #6b7280;
+    --accent: #6366f1;
+    --accent-hover: #4f46e5;
+    --border: #e5e7eb;
+    --error: #ef4444;
+    --radius: 14px;
+    --shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+    --transition: all 0.2s ease-in-out;
+}
