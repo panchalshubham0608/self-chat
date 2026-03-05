@@ -5,6 +5,7 @@ import Logo from "../../assets/logo.png";
 import { chatService } from "../../services/firebase/chat.service";
 import type { Message } from "../../types/message";
 import { QueryDocumentSnapshot } from "firebase/firestore";
+import ChatHeader from "./ChatHeader";
 
 export default function ChatPage() {
     const [messages, setMessages] = useState<Message[]>([]);
@@ -15,6 +16,7 @@ export default function ChatPage() {
     const hasInitialScroll = useRef(false);
     const [selectedMessages, setSelectedMessages] = useState<Set<string>>(new Set());
     const [selectionMode, setSelectionMode] = useState(false);
+    const longPressTriggered = useRef(false);
     const longPressTimer = useRef<any>(null);
 
     useEffect(() => {
@@ -80,6 +82,7 @@ export default function ChatPage() {
     };
 
     const handleLongPressStart = (id: string) => {
+        longPressTriggered.current = false;
         longPressTimer.current = setTimeout(() => {
             setSelectionMode(true);
             setSelectedMessages(new Set([id]));
@@ -92,19 +95,26 @@ export default function ChatPage() {
         }
     };
 
+    const handleClick = (id: string) => {
+        if (longPressTriggered.current) return;
+        if (selectionMode) {
+            toggleSelect(id);
+        }
+    };
+
     return (
         <div className={styles.page}>
-            <div className={styles.header}>
-                <div className={styles.title}>
-                    <img src={Logo} alt="logo" className={styles.logo} />
-                    <span>Self Chat</span>
-                </div>
-
-                <button className={styles.logoutBtn} onClick={authService.logout}>
-                    <i className="fa-solid fa-right-from-bracket"></i>
-                </button>
-            </div>
-
+            <ChatHeader
+                selectionMode={selectionMode}
+                selectedCount={selectedMessages.size}
+                onExitSelection={() => {
+                    setSelectionMode(false);
+                    setSelectedMessages(new Set());
+                }}
+                onCopy={() => { }}
+                onDelete={() => { }}
+                onLogout={authService.logout}
+            />
             <div className={styles.messages} ref={messagesRef} onScroll={handleScroll}>
                 {messages.map((msg) => (
                     <div key={msg.id} className={`${styles.messageRow} ${selectedMessages.has(msg.id) ? styles.selected : ""}`}
@@ -113,9 +123,7 @@ export default function ChatPage() {
                         onMouseLeave={handleLongPressEnd}
                         onTouchStart={() => handleLongPressStart(msg.id)}
                         onTouchEnd={handleLongPressEnd}
-                        onClick={() => {
-                            if (selectionMode) toggleSelect(msg.id);
-                        }}
+                        onClick={() => handleClick(msg.id)}
                     >
                         <div className={`${styles.messageBubble}`}>
                             {msg.text}

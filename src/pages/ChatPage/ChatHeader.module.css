@@ -1,0 +1,75 @@
+.header {
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    border-bottom: 1px solid #eee;
+}
+
+.title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    font-size: 18px;
+
+}
+
+.logoArea {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.logo {
+    width: 28px;
+}
+
+.selectionCount {
+    margin-left: 12px;
+    font-weight: 600;
+}
+
+.actions {
+    margin-left: auto;
+    display: flex;
+    gap: 14px;
+}
+
+/* .iconBtn {
+    border: none;
+    background: transparent;
+    font-size: 18px;
+    cursor: pointer;
+} */
+
+.iconBtn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 16px;
+    color: #444;
+    background: transparent;
+
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.iconBtn:hover {
+    background: rgba(0, 0, 0, 0.08);
+}
+
+.iconBtn:active {
+    background: rgba(0, 0, 0, 0.12);
+}
+
+.iconBtn i {
+    pointer-events: none;
+}
