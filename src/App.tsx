@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { onAuthStateChanged, type User } from "firebase/auth";
 import { auth } from "./firebase/config";
 import AuthForm from "./components/AuthForm";
-import Chat from "./components/Chat";
+import ChatPage from "./pages/ChatPage/ChatPage";
 
 function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -19,7 +19,7 @@ function App() {
 
   if (loading) return <div>Loading...</div>;
 
-  return <>{user ? <Chat user={user} /> : <AuthForm />}</>;
+  return <>{user ? <ChatPage /> : <AuthForm />}</>;
 }
 
 export default App;
