@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import styles from "./ChatPage.module.css";
 import { authService } from "../../services/firebase/auth.service";
-import Logo from "../../assets/logo.png";
 import { chatService } from "../../services/firebase/chat.service";
 import type { Message } from "../../types/message";
 import { QueryDocumentSnapshot } from "firebase/firestore";
 import ChatHeader from "./ChatHeader";
+import Toast from "../../components/Toast";
+import { useToast } from "../../hooks/useToast";
+import { copyToClipboard } from "../../utils/copyToClipboard";
 
 export default function ChatPage() {
     const [messages, setMessages] = useState<Message[]>([]);
@@ -18,6 +20,7 @@ export default function ChatPage() {
     const [selectionMode, setSelectionMode] = useState(false);
     const longPressTriggered = useRef(false);
     const longPressTimer = useRef<any>(null);
+    const { toastMessage, visible, showToast } = useToast();
 
     useEffect(() => {
         if (!hasInitialScroll.current && messages.length > 0) {
@@ -102,8 +105,44 @@ export default function ChatPage() {
         }
     };
 
+    const handleCopy = async () => {
+        const selected = messages
+            .filter((m) => selectedMessages.has(m.id))
+            .sort((a, b) => {
+                const ta = a.createdAt?.seconds ?? 0;
+                const tb = b.createdAt?.seconds ?? 0;
+                return ta - tb;
+            })
+            .map((m) => {
+                const date = m.createdAt?.toDate?.();
+                const formattedDate = date
+                    ? date.toLocaleString([], {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                    })
+                    : "";
+                return `[${formattedDate}] ${m.text}`;
+            })
+            .join("\n");
+
+        if (!selected) return;
+
+        try {
+            await copyToClipboard(selected);
+            showToast(`${selectedMessages.size} message copied`);
+            setSelectionMode(false);
+            setSelectedMessages(new Set());
+        } catch (err) {
+            console.error("Copy failed", err);
+        }
+    };
+
     return (
         <div className={styles.page}>
+            <Toast message={toastMessage} visible={visible} />
             <ChatHeader
                 selectionMode={selectionMode}
                 selectedCount={selectedMessages.size}
@@ -111,7 +150,7 @@ export default function ChatPage() {
                     setSelectionMode(false);
                     setSelectedMessages(new Set());
                 }}
-                onCopy={() => { }}
+                onCopy={handleCopy}
                 onDelete={() => { }}
                 onLogout={authService.logout}
             />
