@@ -8,13 +8,24 @@
 }
 
 .toast {
-    background: rgba(40, 40, 40, 0.9);
     color: white;
     padding: 10px 16px;
     border-radius: 20px;
     font-size: 14px;
     white-space: nowrap;
     animation: fadeInOut 2s ease;
+}
+
+.info {
+    background: rgba(40, 40, 40, 0.9);
+}
+
+.success {
+    background: rgba(40, 170, 40, 0.9);
+}
+
+.error {
+    background: rgba(220, 60, 60, 0.9);
 }
 
 @keyframes fadeInOut {

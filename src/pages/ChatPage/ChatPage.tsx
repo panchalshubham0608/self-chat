@@ -8,6 +8,7 @@ import ChatHeader from "./ChatHeader";
 import Toast from "../../components/Toast";
 import { useToast } from "../../hooks/useToast";
 import { copyToClipboard } from "../../utils/copyToClipboard";
+import ConfirmDialog from "../../components/ConfirmDialog";
 
 export default function ChatPage() {
     const [messages, setMessages] = useState<Message[]>([]);
@@ -20,7 +21,8 @@ export default function ChatPage() {
     const [selectionMode, setSelectionMode] = useState(false);
     const longPressTriggered = useRef(false);
     const longPressTimer = useRef<any>(null);
-    const { toastMessage, visible, showToast } = useToast();
+    const { toastMessage, visible, type, showToast } = useToast();
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
     useEffect(() => {
         if (!hasInitialScroll.current && messages.length > 0) {
@@ -56,6 +58,7 @@ export default function ChatPage() {
             bottomRef.current?.scrollIntoView({ behavior: "auto" });
         } catch (err) {
             console.log(err);
+            showToast("Failed to send message", "error");
         }
     };
 
@@ -137,12 +140,26 @@ export default function ChatPage() {
             setSelectedMessages(new Set());
         } catch (err) {
             console.error("Copy failed", err);
+            showToast("Failed to copy message(s)", "error");
+        }
+    };
+
+    const confirmDelete = async () => {
+        try {
+            await chatService.deleteMessages([...selectedMessages]);
+            showToast(`${selectedMessages.size} message deleted`);
+            setSelectionMode(false);
+            setSelectedMessages(new Set());
+            setShowDeleteDialog(false);
+        } catch (err) {
+            console.error(err);
+            showToast("Failed to delete message(s)", "error");
         }
     };
 
     return (
         <div className={styles.page}>
-            <Toast message={toastMessage} visible={visible} />
+            <Toast message={toastMessage} type={type} visible={visible} />
             <ChatHeader
                 selectionMode={selectionMode}
                 selectedCount={selectedMessages.size}
@@ -151,8 +168,17 @@ export default function ChatPage() {
                     setSelectedMessages(new Set());
                 }}
                 onCopy={handleCopy}
-                onDelete={() => { }}
+                onDelete={() => setShowDeleteDialog(true)}
                 onLogout={authService.logout}
+            />
+            <ConfirmDialog
+                open={showDeleteDialog}
+                title="Delete messages?"
+                message={`Delete ${selectedMessages.size} selected message(s)?`}
+                confirmText="Delete"
+                cancelText="Cancel"
+                onConfirm={confirmDelete}
+                onCancel={() => setShowDeleteDialog(false)}
             />
             <div className={styles.messages} ref={messagesRef} onScroll={handleScroll}>
                 {messages.map((msg) => (

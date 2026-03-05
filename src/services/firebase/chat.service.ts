@@ -9,6 +9,9 @@ import {
     limit,
     getDocs,
     startAfter,
+    doc,
+    writeBatch,
+    deleteDoc,
 } from "firebase/firestore";
 
 import { auth } from "../../firebase/config";
@@ -79,5 +82,14 @@ export const chatService = {
             text,
             createdAt: serverTimestamp(),
         });
+    },
+
+    async deleteMessages(ids: string[]) {
+        const messagesCollection = getMessagesCollection();
+        const deletions = ids.map((id) =>
+            deleteDoc(doc(messagesCollection, id))
+        );
+
+        await Promise.all(deletions);
     },
 };
