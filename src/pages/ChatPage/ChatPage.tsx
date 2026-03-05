@@ -1,27 +1,51 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import styles from "./ChatPage.module.css";
 import { authService } from "../../services/firebase/auth.service";
 import Logo from "../../assets/logo.png";
 import { chatService } from "../../services/firebase/chat.service";
 import type { Message } from "../../types/message";
+import { QueryDocumentSnapshot } from "firebase/firestore";
 
 export default function ChatPage() {
     const [messages, setMessages] = useState<Message[]>([]);
     const [message, setMessage] = useState("");
+    const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot | null>(null);
+    const messagesRef = useRef<HTMLDivElement>(null);
+    const bottomRef = useRef<HTMLDivElement | null>(null);
+    const hasInitialScroll = useRef(false);
 
     useEffect(() => {
-        const unsubscribe = chatService.subscribeToMessages((data: Message[]) => {
+        if (!hasInitialScroll.current && messages.length > 0) {
+            bottomRef.current?.scrollIntoView({ behavior: "auto" });
+            hasInitialScroll.current = true;
+        }
+    }, [messages]);
+
+    useEffect(() => {
+        const unsubscribe = chatService.subscribeToMessages((data: Message[], cursor: QueryDocumentSnapshot | null) => {
             setMessages(data);
+            setLastDoc(cursor);
         });
 
         return () => unsubscribe();
     }, []);
+
+    const handleScroll = async () => {
+        if (!messagesRef.current || !lastDoc) return;
+
+        if (messagesRef.current.scrollTop === 0) {
+            const result = await chatService.loadOlderMessages(lastDoc);
+            setMessages((prev) => [...result.messages, ...prev]);
+            setLastDoc(result.lastDoc);
+        }
+    };
 
     const handleSend = async () => {
         if (!message.trim()) return;
         try {
             await chatService.sendTextMessage(message.trim());
             setMessage("");
+            bottomRef.current?.scrollIntoView({ behavior: "auto" });
         } catch (err) {
             console.log(err);
         }
@@ -47,7 +71,7 @@ export default function ChatPage() {
                 </button>
             </div>
 
-            <div className={styles.messages}>
+            <div className={styles.messages} ref={messagesRef} onScroll={handleScroll}>
                 {messages.map((msg) => (
                     <div key={msg.id} className={styles.messageRow}>
                         <div className={`${styles.messageBubble}`}>
@@ -55,6 +79,7 @@ export default function ChatPage() {
                         </div>
                     </div>
                 ))}
+                <div ref={bottomRef}></div>
             </div>
 
             <div className={styles.inputWrapper}>
