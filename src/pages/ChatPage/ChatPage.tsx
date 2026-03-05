@@ -109,14 +109,16 @@ export default function ChatPage() {
     };
 
     const handleCopy = async () => {
-        const selected = messages
+        const filtered = messages
             .filter((m) => selectedMessages.has(m.id))
             .sort((a, b) => {
                 const ta = a.createdAt?.seconds ?? 0;
                 const tb = b.createdAt?.seconds ?? 0;
                 return ta - tb;
-            })
-            .map((m) => {
+            });
+
+        let selected =
+            filtered.map((m) => {
                 const date = m.createdAt?.toDate?.();
                 const formattedDate = date
                     ? date.toLocaleString([], {
@@ -129,8 +131,10 @@ export default function ChatPage() {
                     : "";
                 return `[${formattedDate}] ${m.text}`;
             })
-            .join("\n");
+                .join("\n");
 
+        // For single selected message, just copy the text
+        if (filtered.length === 1) selected = filtered[0].text || "";
         if (!selected) return;
 
         try {
