@@ -10,7 +10,6 @@ import {
     getDocs,
     startAfter,
     doc,
-    writeBatch,
     deleteDoc,
 } from "firebase/firestore";
 

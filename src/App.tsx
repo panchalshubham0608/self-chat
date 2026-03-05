@@ -3,6 +3,7 @@ import { onAuthStateChanged, type User } from "firebase/auth";
 import { auth } from "./firebase/config";
 import AuthForm from "./components/AuthForm";
 import ChatPage from "./pages/ChatPage/ChatPage";
+import FullPageLoader from "./components/FullPageLoader";
 
 function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -17,9 +18,12 @@ function App() {
     return () => unsubscribe();
   }, []);
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <FullPageLoader visible />;
 
-  return <>{user ? <ChatPage /> : <AuthForm />}</>;
+  return (
+    <>
+      {user ? <ChatPage /> : <AuthForm />}
+    </>);
 }
 
 export default App;
