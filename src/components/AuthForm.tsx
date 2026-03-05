@@ -93,7 +93,7 @@ const AuthForm = () => {
                         onClick={() => setIsLogin(!isLogin)}
                         className={styles.switchButton}
                     >
-                        {isLogin ? "Login" : "Signup"}
+                        {isLogin ? "Signup" : "Login"}
                     </button>
                 </p>
             </div>
