@@ -13,6 +13,9 @@ export default function ChatPage() {
     const messagesRef = useRef<HTMLDivElement>(null);
     const bottomRef = useRef<HTMLDivElement | null>(null);
     const hasInitialScroll = useRef(false);
+    const [selectedMessages, setSelectedMessages] = useState<Set<string>>(new Set());
+    const [selectionMode, setSelectionMode] = useState(false);
+    const longPressTimer = useRef<any>(null);
 
     useEffect(() => {
         if (!hasInitialScroll.current && messages.length > 0) {
@@ -58,6 +61,37 @@ export default function ChatPage() {
         }
     };
 
+    const toggleSelect = (id: string) => {
+        setSelectedMessages((prev) => {
+            const newSet = new Set(prev);
+
+            if (newSet.has(id)) {
+                newSet.delete(id);
+            } else {
+                newSet.add(id);
+            }
+
+            if (newSet.size === 0) {
+                setSelectionMode(false);
+            }
+
+            return newSet;
+        });
+    };
+
+    const handleLongPressStart = (id: string) => {
+        longPressTimer.current = setTimeout(() => {
+            setSelectionMode(true);
+            setSelectedMessages(new Set([id]));
+        }, 500);
+    };
+
+    const handleLongPressEnd = () => {
+        if (longPressTimer.current) {
+            clearTimeout(longPressTimer.current);
+        }
+    };
+
     return (
         <div className={styles.page}>
             <div className={styles.header}>
@@ -73,7 +107,16 @@ export default function ChatPage() {
 
             <div className={styles.messages} ref={messagesRef} onScroll={handleScroll}>
                 {messages.map((msg) => (
-                    <div key={msg.id} className={styles.messageRow}>
+                    <div key={msg.id} className={`${styles.messageRow} ${selectedMessages.has(msg.id) ? styles.selected : ""}`}
+                        onMouseDown={() => handleLongPressStart(msg.id)}
+                        onMouseUp={handleLongPressEnd}
+                        onMouseLeave={handleLongPressEnd}
+                        onTouchStart={() => handleLongPressStart(msg.id)}
+                        onTouchEnd={handleLongPressEnd}
+                        onClick={() => {
+                            if (selectionMode) toggleSelect(msg.id);
+                        }}
+                    >
                         <div className={`${styles.messageBubble}`}>
                             {msg.text}
                         </div>

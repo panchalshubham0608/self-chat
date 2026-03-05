@@ -15,7 +15,7 @@ import { auth } from "../../firebase/config";
 import { db } from "../../firebase/firestore";
 import { type Message } from "../../types/message";
 
-const PAGE_SIZE = 2;
+const PAGE_SIZE = 5;
 
 const getMessagesCollection = () => {
     const user = auth.currentUser;
